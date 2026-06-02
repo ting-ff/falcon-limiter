@@ -156,14 +156,16 @@ Now you can access the documentation locally under `http://127.0.0.1:8088/_build
 
 ### Development environment
 
-You will need Python 3.6-3.9 and PyPy3 and its source package installed to run
+You will need Python 3.10+ and its source package installed to run
 `tox` in all environments.
 
-We do use type hinting and run MyPy on those, but unfortunately MyPy currently breaks
-the PyPy tests due to the `typed-ast` package's "bug" (see
-https://github.com/python/typed_ast/issues/97). Also with Pipenv you can't 
-have a second Pipfile. This is why for now we don't have `mypy` listed as a dev package
-in the Pipfile.
+### Running tests
+
+```
+$ pip install pipenv
+$ pipenv install --dev
+$ pipenv run pytest
+```
 
 ## Credits
 
