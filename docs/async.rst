@@ -79,6 +79,10 @@ A few examples to demonstrate the use of the async module.
         }
     )
 
+    # Initialize the Redis backend before use and close it during shutdown.
+    # Can also be used as: `async with limiter:`
+    await limiter.initialize()
+
     # The deduct_when function is NOT async!
     def deduct_when_func(req, resp, resource, req_succeeded):
         return resp.status == falcon.HTTP_200
@@ -94,11 +98,12 @@ A few examples to demonstrate the use of the async module.
 
     things = ThingsResource()
     app.add_route('/things', things)
+
+    # Later, during app shutdown:
+    await limiter.close()
 ..
 
 
 Please note, that when using the ``AsyncLimiter``, then a class-level decorator will overwrite
 all method-level decorators of that class. This behaviour is different from the WSGI (eg sync)
 ``Limiter``, where method-level decorators overwrite the class level one.
-
-

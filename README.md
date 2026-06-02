@@ -71,6 +71,18 @@ things = ThingsResource()
 app.add_route('/things', things)
 ```
 
+> **Note:** When using Redis or other network-based storage backends with `AsyncLimiter`,
+> you must initialize the backend before use and close it during shutdown:
+> ```python
+> await limiter.initialize()
+> app = falcon.asgi.App(middleware=limiter.middleware)
+> # later, during app shutdown:
+> await limiter.close()
+> # or use as a context manager:
+> async with limiter:
+>     app = falcon.asgi.App(middleware=limiter.middleware)
+> ```
+
 See documentation for more about Async.
 
 ### A more complicated example
