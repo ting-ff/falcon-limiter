@@ -1,5 +1,7 @@
 """ Testing scenarios when there are multiple decorators in different order
 """
+import inspect
+
 from falcon import asgi, testing, HTTP_200, HTTP_429, HTTP_405
 from falcon_limiter import AsyncLimiter
 from falcon_limiter.utils import get_remote_addr
@@ -15,7 +17,10 @@ def async_decorator(f):
     """ Just a random decorator for testing purposes
     """
     async def wrapper(*args, **kwargs):
-        return f(*args, **kwargs)
+        result = f(*args, **kwargs)
+        if inspect.isawaitable(result):
+            return await result
+        return result
     return wrapper
 
 
