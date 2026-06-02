@@ -42,16 +42,12 @@ Documentation = "https://falcon-limiter.readthedocs.io/en/latest/"
 [tool.flit.metadata.requires-extra]
 test = [
     "coredis",
-    "flit",
     "pylibmc",
     "pytest >=4.0.0",
     "pytest-cov",
-    "pytest-pep8",
     "pytest-xdist",
     "pytest-xprocess",
     "redis",
-    "tox",
-    "tox-pipenv-install"
 ]
 doc = []
 dev = []
