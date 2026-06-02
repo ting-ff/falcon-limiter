@@ -45,6 +45,7 @@ test = [
     "pylibmc",
     "pytest >=4.0.0",
     "pytest-cov",
+    "pytest-timeout",
     "pytest-xdist",
     "pytest-xprocess",
     "redis",
