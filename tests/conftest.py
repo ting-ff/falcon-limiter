@@ -1,4 +1,6 @@
+import asyncio
 import errno
+import warnings
 import pytest
 
 from falcon import asgi, App, testing
@@ -23,6 +25,17 @@ STRATEGIES = [
 # which port the Redis server will be listening on
 # which is started by xprocess
 REDIS_PORT = 63799
+
+
+@pytest.fixture(autouse=True)
+def _ensure_event_loop():
+    """Ensure an event loop exists for Python 3.10 compatibility."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        try:
+            asyncio.get_event_loop()
+        except RuntimeError:
+            asyncio.set_event_loop(asyncio.new_event_loop())
 
 
 # parametrized fixture to create limiters with different strategies
