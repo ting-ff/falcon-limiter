@@ -1,11 +1,6 @@
 name: Run tests
 
 on:
-  # Trigger the tests workflow on push on all branches, but
-  # for pull request only on the master branch
-  push:
-    branches:
-      - "**"
   pull_request:
     branches:
       - master
@@ -44,15 +39,4 @@ jobs:
 
       - name: Test with pytest
         run: |
-          pipenv run pytest --cov-report xml:coverage.xml --cov-report term-missing
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        if: ${{ matrix.python-version == '3.12' }}
-        with:
-          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-          env_vars: PYTHON
-          files: ./coverage.xml
-          flags: pytest
-          fail_ci_if_error: true
-          verbose: true
+          pipenv run pytest --cov-report term-missing
