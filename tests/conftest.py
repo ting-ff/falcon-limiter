@@ -1,7 +1,7 @@
 import errno
 import pytest
 
-from falcon import asgi, API, testing
+from falcon import asgi, App, testing
 from falcon_limiter import Limiter, AsyncLimiter
 from falcon_limiter.utils import get_remote_addr
 
@@ -82,7 +82,7 @@ def app(request, limiter):
     class ThingsResource:
         # unmarked methods will use the default limit
         def on_get(self, req, resp):
-            resp.body = 'Hello world!'
+            resp.text = 'Hello world!'
 
         # mark this method with a special limit
         # which will overwrite the default
@@ -97,7 +97,7 @@ def app(request, limiter):
             pass
 
     # add the limiter middleware to the Falcon app
-    app = API(middleware=limiter.middleware)
+    app = App(middleware=limiter.middleware)
 
     things = ThingsResource()
     thingsnolimit = ThingsResourceNoLimit()
@@ -117,7 +117,7 @@ def asyncapp(request, asynclimiter):
     class ThingsResource:
         # unmarked methods will use the default limit
         async def on_get(self, req, resp):
-            resp.body = 'Hello world!'
+            resp.text = 'Hello world!'
 
         # mark this method with a special limit
         # which will overwrite the default
