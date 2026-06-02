@@ -7,6 +7,7 @@
     :copyright: (c) 2022 by Zoltan Fedor.
     :license: MIT, see LICENSE for more details.
 """
+import asyncio
 import inspect
 from limits.storage import storage_from_string, Storage
 from limits.aio.strategies import STRATEGIES, RateLimiter
@@ -84,6 +85,7 @@ class AsyncLimiter:
 
         self.limiter = STRATEGIES[self.config['RATELIMIT_STRATEGY']](self.storage)
         self._initialized = False
+        self._init_lock = asyncio.Lock()
 
     async def initialize(self) -> None:
         """Initialize the async storage backend.
@@ -98,15 +100,31 @@ class AsyncLimiter:
                 # limiter is initialized here
                 app = asgi.App(middleware=limiter.middleware)
         """
-        if self._initialized:
-            return
+        async with self._init_lock:
+            if self._initialized:
+                return
 
-        storage_client = getattr(getattr(self.storage, 'bridge', None), 'storage', None)
-        context_enter = getattr(storage_client, '__aenter__', None)
-        if context_enter:
-            await context_enter()
+            storage_client = getattr(getattr(self.storage, 'bridge', None), 'storage', None)
+            context_enter = getattr(storage_client, '__aenter__', None)
+            if context_enter:
+                await context_enter()
+            elif not self.config['RATELIMIT_STORAGE_URL'].startswith(('memory://', 'async+memory://')):
+                logger.warning(
+                    "Could not find async context manager on storage backend '%s'. "
+                    "The limits library internals may have changed. "
+                    "Network-based storage backends may not work correctly.",
+                    self.config['RATELIMIT_STORAGE_URL'],
+                )
 
-        self._initialized = True
+            self._initialized = True
+
+            check = getattr(self.storage, 'check', None)
+            if check:
+                result = check()
+                if inspect.isawaitable(result):
+                    result = await result
+                if not result:
+                    logger.error("The storage backend has failed its check, please verify the provided storage settings!")
 
     async def close(self) -> None:
         """Close the async storage backend and release resources.
@@ -114,15 +132,16 @@ class AsyncLimiter:
         For network backends exposing an async context manager, this exits the
         underlying client's async context manager.
         """
-        if not self._initialized:
-            return
+        async with self._init_lock:
+            if not self._initialized:
+                return
 
-        storage_client = getattr(getattr(self.storage, 'bridge', None), 'storage', None)
-        context_exit = getattr(storage_client, '__aexit__', None)
-        if context_exit:
-            await context_exit(None, None, None)
+            storage_client = getattr(getattr(self.storage, 'bridge', None), 'storage', None)
+            context_exit = getattr(storage_client, '__aexit__', None)
+            if context_exit:
+                await context_exit(None, None, None)
 
-        self._initialized = False
+            self._initialized = False
 
     async def __aenter__(self) -> 'AsyncLimiter':
         await self.initialize()
