@@ -6,7 +6,7 @@ from falcon_limiter import Limiter, AsyncLimiter
 from falcon_limiter.utils import get_remote_addr
 
 try:
-    __import__("pytest_xprocess")
+    __import__("xprocess")
     from xprocess import ProcessStarter
 except ImportError:
     @pytest.fixture(scope="session")
