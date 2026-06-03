@@ -17,6 +17,7 @@ pytest-xprocess = "*"
 redis = "*"
 mypy = "*"
 sphinx = "*"
+tomli = "*"
 tox = "*"
 tox-pipenv-install = "*"
 
